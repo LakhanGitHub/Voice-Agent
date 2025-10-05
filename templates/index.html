@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎤AI Voice Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #333;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .assistant-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .assistant-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .assistant-header h2 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #2c5364 0%, #0f2027 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .assistant-header p {
+            color: #5a6c7d;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .voice-interface {
+            margin: 2.5rem 0;
+            position: relative;
+        }
+
+        .button-container {
+            position: relative;
+            margin: 2rem auto;
+            width: 180px;
+            height: 180px;
+        }
+
+        .start-button {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2c5364 0%, #0f2027 100%);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(44, 83, 100, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 50px rgba(44, 83, 100, 0.6);
+        }
+
+        .start-button:active {
+            transform: scale(0.98);
+        }
+
+        .start-button.active {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        }
+
+        .start-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .start-button:hover::before {
+            width: 200px;
+            height: 200px;
+        }
+
+        .mic-icon {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .button-text {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.5px;
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 180px;
+            height: 180px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .pulse-ring.active {
+            opacity: 1;
+        }
+
+        .pulse-ring::before,
+        .pulse-ring::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #2c5364;
+            opacity: 0;
+            animation: pulse 2.5s ease-out infinite;
+        }
+
+        .pulse-ring::after {
+            animation-delay: 1.25s;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.4);
+                opacity: 0;
+            }
+        }
+
+        .status-text {
+            margin-top: 1.5rem;
+            color: #5a6c7d;
+            font-size: 0.95rem;
+            font-style: italic;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .feature {
+            text-align: center;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 0.75rem;
+            background: linear-gradient(135deg, #2c5364 0%, #0f2027 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(44, 83, 100, 0.3);
+        }
+
+        .feature h3 {
+            font-size: 1rem;
+            color: #0f2027;
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .feature p {
+            font-size: 0.85rem;
+            color: #5a6c7d;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .assistant-container {
+                padding: 2rem 1.5rem;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .assistant-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .start-button {
+                width: 150px;
+                height: 150px;
+            }
+
+            .button-container {
+                width: 150px;
+                height: 150px;
+            }
+
+            .mic-icon {
+                font-size: 3rem;
+            }
+
+            .button-text {
+                font-size: 1rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎙️ AI Voice Assistant</h1>
+    </header>
+    
+    <main>
+        <div class="assistant-container">
+            <div class="assistant-header">
+                <h2>Your Intelligent Companion</h2>
+                <p>Start a natural conversation with your AI-powered voice assistant</p>
+            </div>
+
+            <div class="voice-interface">
+                <div class="button-container">
+                    <div class="pulse-ring" id="pulseRing"></div>
+                    <button class="start-button" id="startButton" onclick="toggleConversation()">
+                        <span class="mic-icon" id="micIcon">🎤</span>
+                        <span class="button-text" id="buttonText">Start Talking</span>
+                    </button>
+                </div>
+                <p class="status-text" id="statusText">Click the button to begin</p>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Smart AI</h3>
+                    <p>Advanced natural language processing</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time</h3>
+                    <p>Instant voice recognition & response</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure</h3>
+                    <p>Privacy-focused conversations</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Voice Assistant • Powered by Advanced AI Technology • Created with ❤️ by Lakhan</p>
+    </footer>
+
+    <!-- VAPI SDK -->
+    <script src="https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js"></script>
+    
+    <script>
+        let vapiInstance = null;
+        let isCallActive = false;
+        
+        const assistant = "assi_api";
+        const apiKey = "api_key";
+
+        // Initialize VAPI when script loads
+        window.addEventListener('load', function() {
+            if (window.vapiSDK) {
+                initializeVapi();
+            } else {
+                // Wait for SDK to load
+                setTimeout(initializeVapi, 1000);
+            }
+        });
+
+        function initializeVapi() {
+            try {
+                vapiInstance = window.vapiSDK.run({
+                    apiKey: apiKey,
+                    assistant: assistant,
+                    config: {
+                        // Hide the default VAPI button
+                        position: "bottom-right",
+                        offset: "40px",
+                        width: "0px",
+                        height: "0px",
+                        idle: {
+                            color: "transparent",
+                            type: "pill",
+                            title: "",
+                            subtitle: "",
+                            icon: ""
+                        }
+                    }
+                });
+
+                // Set up event listeners
+                if (vapiInstance) {
+                    vapiInstance.on('call-start', () => {
+                        console.log('Call started');
+                        isCallActive = true;
+                        updateUI(true);
+                    });
+
+                    vapiInstance.on('call-end', () => {
+                        console.log('Call ended');
+                        isCallActive = false;
+                        updateUI(false);
+                    });
+
+                    vapiInstance.on('speech-start', () => {
+                        console.log('User started speaking');
+                        document.getElementById('statusText').textContent = 'Listening...';
+                    });
+
+                    vapiInstance.on('speech-end', () => {
+                        console.log('User stopped speaking');
+                        document.getElementById('statusText').textContent = 'Processing...';
+                    });
+
+                    vapiInstance.on('message', (message) => {
+                        console.log('Message:', message);
+                        if (message.type === 'transcript' && message.role === 'assistant') {
+                            document.getElementById('statusText').textContent = 'Assistant speaking...';
+                        }
+                    });
+
+                    vapiInstance.on('error', (error) => {
+                        console.error('VAPI Error:', error);
+                        document.getElementById('statusText').textContent = 'Error: ' + error.message;
+                        isCallActive = false;
+                        updateUI(false);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to initialize VAPI:', error);
+                document.getElementById('statusText').textContent = 'Failed to initialize. Please refresh.';
+            }
+        }
+
+        function toggleConversation() {
+            if (!vapiInstance) {
+                document.getElementById('statusText').textContent = 'Initializing... Please wait.';
+                setTimeout(toggleConversation, 1000);
+                return;
+            }
+
+            if (isCallActive) {
+                // End the call
+                vapiInstance.stop();
+            } else {
+                // Start the call
+                vapiInstance.start(assistant);
+            }
+        }
+
+        function updateUI(active) {
+            const button = document.getElementById('startButton');
+            const buttonText = document.getElementById('buttonText');
+            const micIcon = document.getElementById('micIcon');
+            const statusText = document.getElementById('statusText');
+            const pulseRing = document.getElementById('pulseRing');
+
+            if (active) {
+                button.classList.add('active');
+                buttonText.textContent = 'End Call';
+                micIcon.textContent = '📞';
+                statusText.textContent = 'Connected - Speak now';
+                pulseRing.classList.add('active');
+            } else {
+                button.classList.remove('active');
+                buttonText.textContent = 'Start Talking';
+                micIcon.textContent = '🎤';
+                statusText.textContent = 'Click the button to begin';
+                pulseRing.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
